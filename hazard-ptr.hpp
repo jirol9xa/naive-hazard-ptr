@@ -25,7 +25,6 @@ namespace Concurrent {
     } // namespace detail
 
     class HazardPtr {
-        // HazardPtr know "address" of himself. That info uses for proper retaining
         detail::HPCell* ThreadLocalCellAddr = nullptr;
         std::function<void(detail::HPCell)> Deleter = {};
 
