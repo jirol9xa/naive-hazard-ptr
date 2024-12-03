@@ -51,7 +51,8 @@ namespace Concurrent {
 
         void Retire();
         ~HazardPtr() {
-            Retire();
+            // No need to sync, because other thread can write something from cell if and only if it has nullptr value
+            *ThreadLocalCellAddr = nullptr;
         }
     };
 
@@ -93,7 +94,7 @@ namespace Concurrent {
         public:
             HazardPtr Create(std::__thread_id id, std::function<void(HPCell)> deleter) override {
                 auto& threadLocalHazardPtrs = HPStorage[id];
-                auto freePtr = std::find_if(threadLocalHazardPtrs.begin(), threadLocalHazardPtrs.end(), [](const auto& ptr) { return ptr == nullptr; });
+                auto freePtr = std::find(threadLocalHazardPtrs.begin(), threadLocalHazardPtrs.end(), nullptr);
                 if (freePtr == threadLocalHazardPtrs.end()) {
                     // TODO: Mb clear retain arr here
                     throw std::runtime_error("Thread local storage for hazard ptr overload");
